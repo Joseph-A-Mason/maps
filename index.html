@@ -22,6 +22,22 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken:'pk.eyJ1Ijoiam9zZXBoLWFkbGFuZC1tYXNvbiIsImEiOiJja3h2N3VuNzAzeTZtMndvY2VsN21yNHVzIn0.GbFCZDJqXknV15OYQGlmYw'
 }).addTo(map);
 
+fetch("WI_LG_Parcells.geojson")
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        L.geoJSON(data.addTo(map);
+    });
+ 
+fetch("white_and_red_pine.geojson")
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        L.geoJSON(data).addTo(map);
+    });
+
 </script>
 <body>
 </html>
