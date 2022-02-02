@@ -4,9 +4,8 @@
 <link rel="stylesheet" href="leaflet.css" />
 <script src="leaflet.js"></script>
 <script src="WI_LG_Parcells.js"></script>
-<script src="white_and_red_pine.geojson"></script>
 <style>
-   #map{ height: 450px; }
+   #map{ height: 100%; }
   </style>
 </head>
 
@@ -25,7 +24,6 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken:'pk.eyJ1Ijoiam9zZXBoLWFkbGFuZC1tYXNvbiIsImEiOiJja3h2N3VuNzAzeTZtMndvY2VsN21yNHVzIn0.GbFCZDJqXknV15OYQGlmYw'
 }).addTo(map);
 
-var pines;
 var parcels;
 
 var selection;
@@ -48,12 +46,13 @@ function parcelsSelectedStyle(feature) {
   };
 }
 
-// handle click events on garden features
+// handle click events on features
 function parcelsOnEachFeature(feature, layer){
   layer.on({
-    click: function(e) {
-      if (selection) {            
-        resetStyles();
+	click: function(e) {
+        if (selection) {            
+        //layer.bindPopup('<p>University: '+feature.properties.University+'</p><p>Tribal Nation: '+feature.properties.Tribal_Nat+'</p>');
+	resetStyles();
       }
               
       e.target.setStyle(parcelsSelectedStyle());
@@ -61,18 +60,19 @@ function parcelsOnEachFeature(feature, layer){
       selectedLayer = parcels;
 
       // Insert some HTML with the feature name
-      buildSummaryLabel(feature);
+      //buildSummaryLabel(feature);
+      layer.bindPopup('<p>University: '+feature.properties.University+'</p><p>Tribal Nation: '+feature.properties.Tribal_Nat+'</p>');
 
       L.DomEvent.stopPropagation(e); // stop click event from being propagated further
     }
   });
 }
 
-// add the gardens GeoJSON layer using the gardensData variable from gardens.js
+// add the parcels GeoJSON layer using the parcelsData variable from WI_LG_Parcells.js
 var parcels = new L.geoJSON(parcelsData,{
   style: parcelsStyle,
   onEachFeature: parcelsOnEachFeature, function (feature, layer) {
-    layer.bindPopup('<p>University: '+feature.properties.University+'</p><p>Tribal Nation: '+feature.properties.Tribal_Nat+'</p>');
+    //layer.bindPopup('<p>University: '+feature.properties.University+'</p><p>Tribal Nation: '+feature.properties.Tribal_Nat+'</p>');
   }
 });    
                
@@ -94,7 +94,7 @@ function resetStyles(){
 
 // function to build the HTML for the summary label using the selected feature's "name" property
 function buildSummaryLabel(currentFeature){
-  var featureName = currentFeature.properties.name || "Unnamed feature";
+  var featureName = currentFeature.properties.University || "Unnamed feature";
   document.getElementById('OBJECTID_1').innerHTML = '<p style="font-size:18px"><b>' + featureName + '</b></p>';
 }	
     
