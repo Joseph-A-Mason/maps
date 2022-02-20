@@ -4,18 +4,13 @@
 <link rel="stylesheet" href="leaflet.css" />
 <script src="leaflet.js"></script>
 <script src="WI_LG_Parcells.js"></script>
+<script src="white_and_red_pine.js"></script>
 <style>
    #map{ height: 100%; }
   </style>
 </head>
 
 <body>
-
-<div id="text"></div>
-<h2>Morrill Act Parcels in Wisconsin</h2>
-
-<p>Working map for internal use only. Data from High Country News Land-Grab Universities Project and associated <a href "https://github.com/HCNData/landgrabu-data">database</a>.</p>
-<p></p> Citation: Robert Lee, Morrill Act of 1862 Indigenous Land Parcels Database, High Country News, March 2020.</p>
 
 <div id="map"></div>
 
@@ -29,79 +24,15 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     zoomOffset: -1,
     accessToken:'pk.eyJ1Ijoiam9zZXBoLWFkbGFuZC1tYXNvbiIsImEiOiJja3h2N3VuNzAzeTZtMndvY2VsN21yNHVzIn0.GbFCZDJqXknV15OYQGlmYw'
 }).addTo(map);
-
-var parcels;
-
-var selection;
-var selectedLayer;
-
-// define the styles for the parcels layer (unselected and selected)
-function parcelsStyle(feature) {
-  return {
-    fillColor: "#FF00FF",
-    fillOpacity: 0.3,
-    color: '#B04173',
-  };
-}
-
-function parcelsSelectedStyle(feature) {
-  return {
-    fillColor: "#00FFFB",
-    color: '#0000FF',
-    fillOpacity: 1
-  };
-}
-
-// handle click events on features
-function parcelsOnEachFeature(feature, layer){
-  layer.on({
-	click: function(e) {
-        if (selection) {            
-       	resetStyles();
-      }
-              
-      e.target.setStyle(parcelsSelectedStyle());
-      selection = e.target;
-      selectedLayer = parcels;
-
-      layer.bindPopup('<p>University: '+feature.properties.University+'</p><p>Tribal Nation: '+feature.properties.Tribal_Nat+'</p>');
-
-      L.DomEvent.stopPropagation(e); // stop click event from being propagated further
-    }
-  });
-}
-
-// add the parcels GeoJSON layer using the parcelsData variable from WI_LG_Parcells.js
-var parcels = new L.geoJSON(parcelsData,{
-  style: parcelsStyle,
-  onEachFeature: parcelsOnEachFeature, function (feature, layer) {
-    //layer.bindPopup('<p>University: '+feature.properties.University+'</p><p>Tribal Nation: '+feature.properties.Tribal_Nat+'</p>');
-  }
-});    
-               
-parcels.addTo(map);
     
-// handle clicks on the map that didn't hit a feature
-map.addEventListener('click', function(e) {
-  if (selection) {
-    resetStyles();
-    selection = null;
-    document.getElementById('summaryLabel').innerHTML = '<p>Click a parcel on the map to get more information.</p>';
-  }
-});
+function onEachFeature(feature, layer) {
+        layer.bindPopup(feature.properties.University+"<br>Tribal Nation: "+feature.properties.Tribal_Nat+"<br>Year of cession: "+feature.properties.Yr_US_Acqu+"<br>US paid: "+feature.properties.US_Paid_fo+"<br>University endowed: "+feature.properties.Endow_Rais+"<br>Year patented: "+feature.properties.Yr_Patent+"<br>Patentee(s): "+feature.properties.Patentees)
+}    
     
-// function to set the old selected feature back to its original symbol. Used when the map or a feature is clicked.
-function resetStyles(){
-  if (selectedLayer === parcels) selectedLayer.resetStyle(selection);
-}
-
-// function to build the HTML for the summary label using the selected feature's "name" property
-function buildSummaryLabel(currentFeature){
-  var featureName = currentFeature.properties.University || "Unnamed feature";
-  document.getElementById('OBJECTID_1').innerHTML = '<p style="font-size:18px"><b>' + featureName + '</b></p>';
-}	
+L.geoJSON(parcelsData, {
+    onEachFeature: onEachFeature
+}).addTo(map);
     
 </script>
 <body>
 </html>
-
