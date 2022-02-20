@@ -57,16 +57,13 @@ function parcelsOnEachFeature(feature, layer){
   layer.on({
 	click: function(e) {
         if (selection) {            
-        //layer.bindPopup('<p>University: '+feature.properties.University+'</p><p>Tribal Nation: '+feature.properties.Tribal_Nat+'</p>');
-	resetStyles();
+       	resetStyles();
       }
               
       e.target.setStyle(parcelsSelectedStyle());
       selection = e.target;
       selectedLayer = parcels;
 
-      // Insert some HTML with the feature name
-      //buildSummaryLabel(feature);
       layer.bindPopup('<p>University: '+feature.properties.University+'</p><p>Tribal Nation: '+feature.properties.Tribal_Nat+'</p>');
 
       L.DomEvent.stopPropagation(e); // stop click event from being propagated further
