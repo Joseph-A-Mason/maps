@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="leaflet.css" />
 <script src="leaflet.js"></script>
 <script src="WI_LG_Parcells.js"></script>
-<script src="white_and_red_pine.js"></script>
+<script src="PLS_Veg.js"></script>
 <style>
    #map{ height: 100%; }
   </style>
@@ -41,19 +41,51 @@ function parcelPopup(feature, layer) {
         layer.bindPopup(feature.properties.University+"<br>Tribal Nation: "+feature.properties.Tribal_Nat+"<br>Year of cession: "+feature.properties.Yr_US_Acqu+"<br>US paid: "+feature.properties.US_Paid_fo+"<br>University endowed: "+feature.properties.Endow_Rais+"<br>Year patented: "+feature.properties.Yr_Patent+"<br>Patentee(s): "+feature.properties.Patentees)
 }    
     
+function PLSVegPopup(feature, layer) {
+        layer.bindPopup("Vegetation from PLS notes: "+feature.properties.VegValue)
+} 
+    
 var parcels = L.geoJSON(parcelsData, {
     onEachFeature: parcelPopup
 });
     
-var PinesStyle = {
-    "color": "#00FF00",
-    "weight": 5,
-    "opacity": 0.65
-};
-    
-var pines = L.geoJSON(pines, {
-    style: PinesStyle
+function getColor(d) {
+          if(d === 1) return '#abd9e9';
+          if(d === 2) return '#003c30';
+          if(d === 3) return '#01665e';
+          if(d === 4) return '#35978f';
+          if(d === 5) return '#80cdc1';
+          if(d === 6) return '#c7eae5';
+          if(d === 7) return '#f5f5f5';
+          if(d === 8) return '#f6e8c3';
+          if(d === 9) return '#dfc27d';
+          if(d === 10) return '#bf812d';
+          if(d === 11) return '#8c510a';
+          if(d === 12) return '#543005';
+          return '#a6d96a';
+}
+
+function style(feature) {
+    return {
+        fillColor: getColor(feature.properties.Group_code),
+        weight: 1,
+        opacity: 0.2,
+        color: getColor(feature.properties.Group_code),
+        fillOpacity: 0.2
+    };
+}
+
+//var PLSStyle = {
+    //"color": "#00FF00",
+    //"weight": 5,
+    //"opacity": 0.3
+//};
+
+var PLSVeg = L.geoJson(PLS_Veg, {
+    style: style,
+    onEachFeature: PLSVegPopup
 });
+
     
 var baseMaps = {
     "Streets": streets,
@@ -61,18 +93,24 @@ var baseMaps = {
 };
 
 var overlayMaps = {
-    "White and Red Pines": pines,
-    "Land Grant Parcels": parcels
+    "Vegetation from PLS": PLSVeg,
+    "Land Grant Parcels": parcels  
 };
 
 var map = L.map('map', {
-    center: [45.5, -90.0],
-    zoom: 11,
+    center: [44.7, -90.0],
+    zoom: 9,
     layers: [streets, parcels]
 });
     
 L.control.layers(baseMaps, overlayMaps).addTo(map);
+L.control.scale().addTo(map);
+
+var marker_example = L.marker([44.53, -90.07]).addTo(map);
+
+marker_example.bindPopup("<b>Skunk Hill</b><br>An example of a marker used to link to stories, e.g.,<br><a href='https://en.wikipedia.org/wiki/Powers_Bluff'>Wikipedia article on Skunk Hill aka Powers Bluff</a>");
     
+ 
 </script>
 <body>
 </html>
