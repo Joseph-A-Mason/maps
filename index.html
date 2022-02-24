@@ -19,6 +19,8 @@
 <div id="map"></div>
 
 <script>
+    
+//Create two background layers using static tile data from Mapbox
 var streets = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 18,
@@ -37,21 +39,25 @@ var satellite = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}
     accessToken:'pk.eyJ1Ijoiam9zZXBoLWFkbGFuZC1tYXNvbiIsImEiOiJja3h2N3VuNzAzeTZtMndvY2VsN21yNHVzIn0.GbFCZDJqXknV15OYQGlmYw'
 });
     
-    
+//Popup text for Morrill Act parcel layer; using feature properties after conversion of //polygons in HCN geodatabase to geoJSON   
 function parcelPopup(feature, layer) {
         layer.bindPopup(feature.properties.University+"<br>Tribal Nation: "+feature.properties.Tribal_Nat+"<br>Year of cession: "+feature.properties.Yr_US_Acqu+"<br>US paid: "+feature.properties.US_Paid_fo+"<br>University endowed: "+feature.properties.Endow_Rais+"<br>Year patented: "+feature.properties.Yr_Patent+"<br>Patentee(s): "+feature.properties.Patentees)
 }    
-    
+
+//Popup text for PLS-based vegetation layer
 function PLSVegPopup(feature, layer) {
         layer.bindPopup("Vegetation from PLS notes: "+feature.properties.VegValue)
 } 
-    
+
+//Converts code for direction from principle meridian in PLSS layer to E or W
+//All townships in Wisconsin are N so no need to do this for N and S
 function meridDir(t){
         if(t === "4") return "E";
         if(t === "2") return "W";
           return "null";
 } 
 
+//Removes leading 0 in text-format range and township numbers < 10
 function fixNums(n){
         if(n === "01") return "1";
         if(n === "02") return "2";
@@ -65,15 +71,19 @@ function fixNums(n){
         if(n === "10") return "10";
         return n;
 } 
- 
+
+//Popup text for PLSS layer, generated from feature properties after conversion to GeoJSON
+//Also generates links to searches in BLM GLO database and UW Libraries collection of //PLSS notes
 function PLSSPopup(feature, layer) {
         layer.bindPopup("<b>PLSS Description</b><br>Township:"+fixNums(feature.properties.township_n)+"N<br>Range:"+fixNums(feature.properties.range_num)+meridDir(feature.properties.merid_dir)+"<br>Section:"+fixNums(feature.properties.section_nu)+"<br><a href='https://glorecords.blm.gov/results/default.aspx?searchCriteria=type=patent|st=WI|cty=|twp_nr="+fixNums(feature.properties.township_n)+"|twp_dir=N|rng_nr="+fixNums(feature.properties.range_num)+"|rng_dir="+meridDir(feature.properties.merid_dir)+"|sp=true|sw=true|sadv=false#resultsTabIndex=0&page=1&sortField=6&sortDir=0' target='_blank'>Link to township land patents</a><br><a href='https://digicoll.library.wisc.edu/cgi-bin/SurveyNotes/SurveyNotes-idx?type=PLSS&town=T0"+feature.properties.township_n+"N&range=R0"+feature.properties.range_num+meridDir(feature.properties.merid_dir)+"&sect=&size=First+100'target='_blank'>Link to township PLSS Notes</a>")
 } 
-    
+
+//Creates Morrill Act parcel layer with popup info
 var parcels = L.geoJSON(parcelsData, {
     onEachFeature: parcelPopup
 });
-    
+
+//Colors for PLS vegetation polygons
 function getColor(d) {
           if(d === 1) return '#abd9e9';
           if(d === 2) return '#003c30';
@@ -90,6 +100,7 @@ function getColor(d) {
           return '#a6d96a';
 }
 
+//Style for PLS vegetation polygons
 function style(feature) {
     return {
         fillColor: getColor(feature.properties.Group_code),
@@ -100,48 +111,54 @@ function style(feature) {
     };
 }
 
+//Style for PLSS grid
 var PLSStyle = {
     "color": "#00FF00",
     "weight": 1,
     "opacity": 0.5,
     "fillOpacity": 0.05
 };
-
+    
+//Creates PLS-based vegetation layer
 var PLSVeg = L.geoJson(PLS_Veg, {
     style: style,
     onEachFeature: PLSVegPopup
 });
 
-   
+//Creates PLSS grid layer  
 var PLSS = L.geoJson(PLSS, {
     style: PLSStyle,
    onEachFeature: PLSSPopup
 });
-    
+
+//Creates basemap group
 var baseMaps = {
     "Streets": streets,
     "Satellite": satellite
 };
 
+//Creates overlay layer group
 var overlayMaps = {
     "Vegetation from PLS": PLSVeg,
     "Land Grant Parcels": parcels,
     "PLSS Grid": PLSS
 };
 
+//Creates map, adds one basemap and one overlay
 var map = L.map('map', {
     center: [44.7, -90.0],
     zoom: 9,
     layers: [streets, parcels]
 });
-    
+
+//Adds layer control and scale bar
 L.control.layers(baseMaps, overlayMaps).addTo(map);
 L.control.scale().addTo(map);
 
+//Adds a marker
 var marker_example = L.marker([44.53, -90.07]).addTo(map);
 
 marker_example.bindPopup("<b>Skunk Hill</b><br>An example of a marker used to link to stories, e.g.,<br><a href='https://en.wikipedia.org/wiki/Powers_Bluff'>Wikipedia article on Skunk Hill aka Powers Bluff</a>");
-    
  
 </script>
 <body>
