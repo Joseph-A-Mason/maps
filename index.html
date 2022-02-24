@@ -5,6 +5,7 @@
 <script src="leaflet.js"></script>
 <script src="WI_LG_Parcells.js"></script>
 <script src="PLS_Veg.js"></script>
+<script src="PLSS_Grid.js"></script>
 <style>
    #map{ height: 100%; }
   </style>
@@ -45,6 +46,30 @@ function PLSVegPopup(feature, layer) {
         layer.bindPopup("Vegetation from PLS notes: "+feature.properties.VegValue)
 } 
     
+function meridDir(t){
+        if(t === "4") return "E";
+        if(t === "2") return "W";
+          return "null";
+} 
+
+function fixNums(n){
+        if(n === "01") return "1";
+        if(n === "02") return "2";
+        if(n === "03") return "3";
+        if(n === "04") return "4"
+        if(n === "05") return "5";
+        if(n === "06") return "6";
+        if(n === "07") return "7";
+        if(n === "08") return "8";
+        if(n === "09") return "9";
+        if(n === "10") return "10";
+        return n;
+} 
+ 
+function PLSSPopup(feature, layer) {
+        layer.bindPopup("PLSS Section:<br>Township:"+fixNums(feature.properties.township_n)+"N<br>Range:"+fixNums(feature.properties.range_num)+meridDir(feature.properties.merid_dir)+"<br>Section:"+fixNums(feature.properties.section_nu)+"<br><a href='https://glorecords.blm.gov/results/default.aspx?searchCriteria=type=patent|st=WI|cty=|twp_nr="+fixNums(feature.properties.township_n)+"|twp_dir=N|rng_nr="+fixNums(feature.properties.range_num)+"|rng_dir="+meridDir(feature.properties.merid_dir)+"|sp=true|sw=true|sadv=false#resultsTabIndex=0&page=1&sortField=6&sortDir=0' target='_blank'>Link to township land patents</a>")
+} 
+    
 var parcels = L.geoJSON(parcelsData, {
     onEachFeature: parcelPopup
 });
@@ -75,17 +100,23 @@ function style(feature) {
     };
 }
 
-//var PLSStyle = {
-    //"color": "#00FF00",
-    //"weight": 5,
-    //"opacity": 0.3
-//};
+var PLSStyle = {
+    "color": "#00FF00",
+    "weight": 1,
+    "opacity": 0.5,
+    "fillOpacity": 0.05
+};
 
 var PLSVeg = L.geoJson(PLS_Veg, {
     style: style,
     onEachFeature: PLSVegPopup
 });
 
+   
+var PLSS = L.geoJson(PLSS, {
+    style: PLSStyle,
+   onEachFeature: PLSSPopup
+});
     
 var baseMaps = {
     "Streets": streets,
@@ -94,7 +125,8 @@ var baseMaps = {
 
 var overlayMaps = {
     "Vegetation from PLS": PLSVeg,
-    "Land Grant Parcels": parcels  
+    "Land Grant Parcels": parcels,
+    "PLSS Grid": PLSS
 };
 
 var map = L.map('map', {
