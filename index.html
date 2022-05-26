@@ -41,7 +41,7 @@ var satellite = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}
     
 //Popup text for Morrill Act parcel layer; using feature properties after conversion of //polygons in HCN geodatabase to geoJSON   
 function parcelPopup(feature, layer) {
-        layer.bindPopup(feature.properties.University+"<br>Tribal Nation: "+feature.properties.Tribal_Nat+"<br>Year of cession: "+feature.properties.Yr_US_Acqu+"<br>US paid: "+feature.properties.US_Paid_fo+"<br>University endowed: "+feature.properties.Endow_Rais+"<br>Year patented: "+feature.properties.Yr_Patent+"<br>Patentee(s): "+feature.properties.Patentees)
+        layer.bindPopup(feature.properties.University+"<br>Tribal Nation: "+feature.properties.Tribal_Nat+"<br>Year of cession: "+feature.properties.Yr_US_Acqu+"<br>US paid: "+feature.properties.US_Paid_fo+"<br>University endowed: "+feature.properties.Endow_Rais+"<br>Year patented: "+feature.properties.Yr_Patent+"<br>Patentee(s): "+feature.properties.Patentees+"<br><a href= 'https://www.landgrabu.org/lands/"+feature.properties.MTRSA_LG.toLowerCase()+"' target='_blank'>Record in HCN Database</a>")
 }    
 
 //Popup text for PLS-based vegetation layer
