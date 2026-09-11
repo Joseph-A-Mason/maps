@@ -6,37 +6,55 @@
 <script src="WI_LG_Parcells.js"></script>
 <script src="PLS_Veg.js"></script>
 <script src="PLSS_Grid.js"></script>
+<script src="Sawyer_Parcels.js"></script>
+<link rel="stylesheet" href="header_style.css"/>
+<link rel="stylesheet" href="L.Control.Layers.Tree.css"/>
+<script src="L.Control.Layers.Tree.js"></script>
+
 <style>
    #map{ height: 100%; }
   </style>
+    
 </head>
 
 <body>
 
-<div> <p>For internal use only, contact Joe Mason with questions. This map uses data from the <a href="https://github.com/HCN-Digital-Projects/landgrabu-data">High Country News Land Grab U Database</a>. Citation: Robert Lee, "Morrill Act of 1862 Indigenous Land Parcels Database," High Country News, March 2020. See <a href="https://www.landgrabu.org/">https://www.landgrabu.org/</a>for an overview of the Land Grab U Project</p>
+<div class="div-1"> 
+    
+<h2 style=color:darkblue> Tracing Land Parcel History: Case Studies in Northern Wisconsin</h2>
+
+<p><img name="18th century map of upper Great Lakes" src="images/header_map.jpg" width="100%" height="auto" alt="18th century map of upper Great Lakes"></p>
+    
+<p>Image: Part of a 1756 map of lands then claimed by France and Britain, including what is now northern Wisconsin (Library of Congress). Lakes near the label "Lacs aux Outaouais" may be Lac Courte Oreilles and other nearby lakes</p>
+
+<p><b>Acknowledgements:</b> This map uses data from the <a href="https://github.com/HCN-Digital-Projects/landgrabu-data">High Country News Land Grab U Database</a>. Citation: Robert Lee, "Morrill Act of 1862 Indigenous Land Parcels Database," High Country News, March 2020. See <a href="https://www.landgrabu.org/">https://www.landgrabu.org/</a>for an overview of the Land Grab U Project. Background maps from <a href="https://www.openstreetmap.org/copyright">Open Street Map</a> contributors, and courtesy <a href="https://usgs.gov/">US Geological Survey</a>. Parcel data from Wisconsion State Cartographer's Office. PLSS and vegetation map from Wisconsin DNR. Development of this map was supported by a grant from the National Endowment for the Humanities (AA-289974-23) </p>
+    
 </div>
 
 <div id="map"></div>
 
+
 <script>
     
-//Create two background layers using static tile data from Mapbox
-var streets = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    maxZoom: 18,
-    id: 'mapbox/streets-v11',
-    tileSize: 512,
-    zoomOffset: -1,
-    accessToken:'pk.eyJ1Ijoiam9zZXBoLWFkbGFuZC1tYXNvbiIsImEiOiJja3h2N3VuNzAzeTZtMndvY2VsN21yNHVzIn0.GbFCZDJqXknV15OYQGlmYw'
+//Create four background layers using static tile data
+var OpenStreetMap_Mapnik = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	maxZoom: 19,
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 });
     
-var satellite = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    maxZoom: 18,
-    id: 'mapbox/satellite-streets-v11',
-    tileSize: 512,
-    zoomOffset: -1,
-    accessToken:'pk.eyJ1Ijoiam9zZXBoLWFkbGFuZC1tYXNvbiIsImEiOiJja3h2N3VuNzAzeTZtMndvY2VsN21yNHVzIn0.GbFCZDJqXknV15OYQGlmYw'
+var OpenTopoMap=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	maxZoom: 17,
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
+    
+var USGS_USImagery = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}', {
+	maxZoom: 20,
+	attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
+});
+    
+var USGS_USTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
+	maxZoom: 20,
+	attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
 });
     
 //Popup text for Morrill Act parcel layer; using feature properties after conversion of //polygons in HCN geodatabase to geoJSON   
@@ -75,7 +93,12 @@ function fixNums(n){
 //Popup text for PLSS layer, generated from feature properties after conversion to GeoJSON
 //Also generates links to searches in BLM GLO database and UW Libraries collection of //PLSS notes
 function PLSSPopup(feature, layer) {
-        layer.bindPopup("<b>PLSS Description</b><br>Township:"+fixNums(feature.properties.township_n)+"N<br>Range:"+fixNums(feature.properties.range_num)+meridDir(feature.properties.merid_dir)+"<br>Section:"+fixNums(feature.properties.section_nu)+"<br><a href='https://glorecords.blm.gov/results/default.aspx?searchCriteria=type=patent|st=WI|cty=|twp_nr="+fixNums(feature.properties.township_n)+"|twp_dir=N|rng_nr="+fixNums(feature.properties.range_num)+"|rng_dir="+meridDir(feature.properties.merid_dir)+"|sp=true|sw=true|sadv=false#resultsTabIndex=0&page=1&sortField=6&sortDir=0' target='_blank'>Link to township land patents</a><br><a href='https://digicoll.library.wisc.edu/cgi-bin/SurveyNotes/SurveyNotes-idx?type=PLSS&town=T0"+feature.properties.township_n+"N&range=R0"+feature.properties.range_num+meridDir(feature.properties.merid_dir)+"&sect=&size=First+100'target='_blank'>Link to township PLSS Notes</a>")
+        layer.bindPopup("<b>PLSS Description</b><br>Township:"+fixNums(feature.properties.township_n)+"N<br>Range:"+fixNums(feature.properties.range_num)+meridDir(feature.properties.merid_dir)+"<br>Section:"+fixNums(feature.properties.section_nu)+"<br><a href='https://glorecords.blm.gov/results/default.aspx?searchCriteria=type=patent|st=WI|cty=|twp_nr="+fixNums(feature.properties.township_n)+"|twp_dir=N|rng_nr="+fixNums(feature.properties.range_num)+"|rng_dir="+meridDir(feature.properties.merid_dir)+"|sp=true|sw=true|sadv=false#resultsTabIndex=0&page=1&sortField=6&sortDir=0' target='_blank'>Link to township land patents</a><br><a href='https://search.library.wisc.edu/search/digital?filter[facets][geo_topics_facet~Township+T"+feature.properties.township_n+"NR"+feature.properties.range_num+meridDir(feature.properties.merid_dir)+",+4th+Meridian]=yes" target='_blank'>Link to township PLSS Notes</a>")
+} 
+
+//Popup text for county parcels layer, generated from feature properties
+function CoParcelsPopup(feature, layer) {
+        layer.bindPopup("Owner 1:"+feature.properties.OWNERNME1+"<br>Owner 2:"+feature.properties.OWNERNME2)
 } 
 
 //Creates Morrill Act parcel layer with popup info
@@ -116,7 +139,15 @@ var PLSStyle = {
     "color": "#00FF00",
     "weight": 1,
     "opacity": 0.5,
-    "fillOpacity": 0.05
+    "fillOpacity": 0.0
+};
+   
+//Style for Sawyer_Parcels
+var SawyerParcelsstyle = {
+    "color": "#A8422D",
+    "weight": 1,
+    "opacity": 0.5,
+    "fillOpacity": 0.0
 };
     
 //Creates PLS-based vegetation layer
@@ -130,36 +161,248 @@ var PLSS = L.geoJson(PLSS, {
     style: PLSStyle,
    onEachFeature: PLSSPopup
 });
+    
+//Creates Sawyer Parcel layer  
+var Sawyer_Parcels = L.geoJson(Sawyer_Parcels, {
+    style: SawyerParcelsstyle,
+   onEachFeature: CoParcelsPopup
+});
+
+//Gets plat maps and Bordner survey maps urls
+var Plat1897_39_07url = 'plat_maps/Sawyer_1897-T39N-R7W.png', 
+    imageBounds1 = [[45.796068, -91.310745], [45.916046, -91.126343]];
+var Platca1925_39_07url = 'plat_maps/Sawyer_ca1925-T39N-R7W.png',
+    imageBounds2 = [[45.806512, -91.309264], [45.905176, -91.160837]];
+var Plat1957_39_07url = 'plat_maps/Sawyer_1957-T39N-R7W.png',
+    imageBounds3 = [[45.806449, -91.309610], [45.905116, -91.160531]];
+var Bordner_39_07url = 'plat_maps/Sawyer_Bordner-T39N-R7W.png',
+    imageBounds4 = [[45.759491, -91.313399], [45.912277, -91.157165]];
+
+var Plat1897_39_08url = 'plat_maps/Sawyer_1897-T39N-R8W.png', 
+    imageBounds5 = [[45.794460, -91.431519], [45.917329, -91.244077]];
+var Platca1925_39_08url = 'plat_maps/Sawyer_ca1925-T39N-R8W.png',
+    imageBounds6 = [[45.808366, -91.437601], [45.907403, -91.288554]];
+var Plat1957_39_08url = 'plat_maps/Sawyer_1957-T39N-R8W.png',
+    imageBounds7 = [[45.807805, -91.422480], [45.906491, -91.289331]];
+var Bordner_39_08url = 'plat_maps/Sawyer_Bordner-T39N-R8W.png',
+    imageBounds8 = [[45.759102, -91.433985], [45.914087, -91.278527]];
+
+var Plat1897_40_05url = 'plat_maps/Sawyer_1897-T40N-R5W.png', 
+    imageBounds9 = [[45.881963, -91.066329], [45.999061, -90.876867]];
+var Platca1925_40_05url = 'plat_maps/Sawyer_ca1925-T40N-R5W.png',
+    imageBounds10 = [[45.895203, -91.062014], [45.992355, -90.913195]];
+var Plat1957_40_05url = 'plat_maps/Sawyer_1957-T40N-R5W.png',
+    imageBounds11 = [[45.889968, -91.052953], [45.989165, -90.919240]];
+var Bordner_40_05url = 'plat_maps/Sawyer_Bordner-T40N-R5W.png',
+    imageBounds12 = [[45.846333, -91.065772], [45.994966, -90.907958]];
+    
+var Plat1897_37_06url = 'plat_maps/Sawyer_1897-T37N-R6W.png', 
+    imageBounds13 = [[45.621840, -91.191796], [45.743236, -91.005570]];
+var Platca1925_37_06url = 'plat_maps/Sawyer_ca1925-T37N-R6W.png',
+    imageBounds14 = [[45.636307, -91.180611], [45.732850, -91.045177]];
+var Plat1957_37_06url = 'plat_maps/Sawyer_1957-T37N-R6W.png',
+    imageBounds15 = [[45.634416, -91.178416], [45.733437, -91.044169]];
+var Bordner_37_06url = 'plat_maps/Sawyer_Bordner-T37N-R6W.png',
+    imageBounds16 = [[45.586369, -91.188280], [45.737632, -91.032904]];
+    
+var Plat1897_37_07url = 'plat_maps/Sawyer_1897-T37N-R7W.png', 
+    imageBounds17 = [[45.621101, -91.316067], [45.743868, -91.127467]];
+var Platca1925_37_07url = 'plat_maps/Sawyer_ca1925-T37N-R7W.png',
+    imageBounds18 = [[45.635523, -91.305106], [45.731837, -91.165026]];
+var Plat1957_37_07url = 'plat_maps/Sawyer_1957-T37N-R7W.png',
+    imageBounds19 = [[45.634179, -91.301780], [45.733216, -91.171379]];
+var Bordner_37_07url = 'plat_maps/Sawyer_Bordner-T37N-R7W.png',
+    imageBounds20 = [[45.585518, -91.313386], [45.738215, -91.156695]];
+    
+var Plat1897_40_06url = 'plat_maps/Sawyer_1897-T40N-R6W.png', 
+    imageBounds21 = [[45.894854, -91.177414], [45.990889, -91.044383]];
+var Platca1925_40_06url = 'plat_maps/Sawyer_ca1925-T40N-R6W.png',
+    imageBounds22 = [[45.896183, -91.188043], [45.992341, -91.040476]];
+var Plat1957_40_06url = 'plat_maps/Sawyer_1957-T40N-R6W.png',
+    imageBounds23 = [[45.893122, -91.178327], [45.989724, -91.043755]];
+var Bordner_40_06url = 'plat_maps/Sawyer_Bordner-T40N-R6W.png',
+    imageBounds24 = [[45.844952, -91.189613], [45.995653, -91.033725]];
+    
+var Plat1897_40_07url = 'plat_maps/Sawyer_1897-T40N-R7W.png', 
+    imageBounds25 = [[45.894941, -91.300268], [45.992033, -91.168779]];
+var Platca1925_40_07url = 'plat_maps/Sawyer_ca1925-T40N-R7W.png',
+    imageBounds26 = [[45.894463, -91.310644], [45.990644, -91.162153]];
+var Plat1957_40_07url = 'plat_maps/Sawyer_1957-T40N-R7W.png',
+    imageBounds27 = [[45.893344, -91.297312], [45.990833, -91.168750]];
+var Bordner_40_07url = 'plat_maps/Sawyer_Bordner-T40N-R7W.png',
+    imageBounds28 = [[45.845210, -91.313713], [45.996684, -91.155910]];
+    
+    
+//Creates plat and Bordner map image layers  
+var Plat1897_39_07 = L.imageOverlay(Plat1897_39_07url,imageBounds1);
+var Platca1925_39_07 = L.imageOverlay(Platca1925_39_07url,imageBounds2);
+var Plat1957_39_07 = L.imageOverlay(Plat1957_39_07url,imageBounds3);
+var Bordner_39_07 = L.imageOverlay(Bordner_39_07url,imageBounds4);
+    
+var Plat1897_39_08 = L.imageOverlay(Plat1897_39_08url,imageBounds5);
+var Platca1925_39_08 = L.imageOverlay(Platca1925_39_08url,imageBounds6);
+var Plat1957_39_08 = L.imageOverlay(Plat1957_39_08url,imageBounds7);
+var Bordner_39_08 = L.imageOverlay(Bordner_39_08url,imageBounds8);
+    
+var Plat1897_40_05 = L.imageOverlay(Plat1897_40_05url,imageBounds9);
+var Platca1925_40_05 = L.imageOverlay(Platca1925_40_05url,imageBounds10);
+var Plat1957_40_05 = L.imageOverlay(Plat1957_40_05url,imageBounds11);
+var Bordner_40_05 = L.imageOverlay(Bordner_40_05url,imageBounds12);
+    
+var Plat1897_37_06 = L.imageOverlay(Plat1897_37_06url,imageBounds13);
+var Platca1925_37_06 = L.imageOverlay(Platca1925_37_06url,imageBounds14);
+var Plat1957_37_06 = L.imageOverlay(Plat1957_37_06url,imageBounds15);
+var Bordner_37_06 = L.imageOverlay(Bordner_37_06url,imageBounds16);
+
+var Plat1897_37_07 = L.imageOverlay(Plat1897_37_07url,imageBounds17);
+var Platca1925_37_07 = L.imageOverlay(Platca1925_37_07url,imageBounds18);
+var Plat1957_37_07 = L.imageOverlay(Plat1957_37_07url,imageBounds19);
+var Bordner_37_07 = L.imageOverlay(Bordner_37_07url,imageBounds20);
+    
+var Plat1897_40_06 = L.imageOverlay(Plat1897_40_06url,imageBounds21);
+var Platca1925_40_06 = L.imageOverlay(Platca1925_40_06url,imageBounds22);
+var Plat1957_40_06 = L.imageOverlay(Plat1957_40_06url,imageBounds23);
+var Bordner_40_06 = L.imageOverlay(Bordner_40_06url,imageBounds24);
+
+var Plat1897_40_07 = L.imageOverlay(Plat1897_40_07url,imageBounds25);
+var Platca1925_40_07 = L.imageOverlay(Platca1925_40_07url,imageBounds26);
+var Plat1957_40_07 = L.imageOverlay(Plat1957_40_07url,imageBounds27);
+var Bordner_40_07 = L.imageOverlay(Bordner_40_07url,imageBounds28);
+        
 
 //Creates basemap group
-var baseMaps = {
-    "Streets": streets,
-    "Satellite": satellite
-};
+//var baseMaps = {
+   /* "Open Street Map": OpenStreetMap_Mapnik,
+    "Satellite": USGS_USImagery
+};*/
 
 //Creates overlay layer group
-var overlayMaps = {
+/*var overlayMaps = {
     "Vegetation from PLS": PLSVeg,
     "Land Grant Parcels": parcels,
-    "PLSS Grid": PLSS
-};
+    "PLSS Grid": PLSS,
+    "County Parcels":SawyerParcels
+    "T39N-R7W 1897": Plat1897_39_07,
+    "T39N-R7W ca1925": Platca1925_39_07,
+    "T39N-R7W 1957": Plat1957_39_07,
+    "T39N-R7W Bordner": Bordner_39_07,
+    "T39N-R8W 1897": Plat1897_39_08,
+    "T39N-R8W ca1925": Platca1925_39_08,
+    "T39N-R8W 1957": Plat1957_39_08,
+    "T39N-R8W Bordner": Bordner_39_08,
+    "T40N-R5W 1897": Plat1897_40_05,
+    "T40N-R5W ca1925": Platca1925_40_05,
+    "T40N-R5W 1957": Plat1957_40_05,
+    "T40N-R5W Bordner": Bordner_40_05,
+    "T37N-R6W 1897": Plat1897_37_06,
+    "T37N-R6W ca1925": Platca1925_37_06,
+    "T37N-R6W 1957": Plat1957_37_06,
+    "T37N-R6W Bordner": Bordner_37_06,
+    "T37N-R7W 1897": Plat1897_37_07,
+    "T37N-R7W ca1925": Platca1925_37_07,
+    "T37N-R7W 1957": Plat1957_37_07,
+    "T37N-R7W Bordner": Bordner_37_07
+};*/
 
 //Creates map, adds one basemap and one overlay
 var map = L.map('map', {
-    center: [44.7, -90.0],
-    zoom: 9,
-    layers: [streets, parcels]
+    center: [45.8, -91.25],
+    zoom: 11,
+    zoomSnap: 0.1,
+    layers: [OpenStreetMap_Mapnik, PLSS]
 });
 
+var baseTree = {
+    label: 'Base Layers',
+    children: [
+                { label: 'OpenStreetMap', layer: OpenStreetMap_Mapnik },
+                { label: 'OpenTopoMap', layer: OpenTopoMap },
+                { label: 'USGS Satellite', layer: USGS_USImagery },
+                { label: 'USGS Topo Map', layer: USGS_USTopo },
+            ]
+};
+var overlaysTree = {
+    label: 'Data Layers',
+    children: [
+        {
+            label: 'Statewide Layers',
+            children: [
+                { label: 'PLSS Sections', layer: PLSS },
+                { label: 'Morrill Act Parcels', layer: parcels },
+                { label: 'PLS Vegetation', layer: PLSVeg },
+                { label: 'Property Parcels', layer: Sawyer_Parcels },
+            ]
+        }, {
+            label: 'T37N R6W',
+            collapsed: true,
+            children: [
+                { label: '1897 Plat Map', layer:Plat1897_37_06},
+                { label: 'ca1925 Plat Map', layer:Platca1925_37_06},
+                { label: '1957 Plat Map', layer:Plat1957_37_06},
+                { label: 'Bordner Survey', layer:Bordner_37_06},
+            ]
+        }, {
+            label: 'T37N R7W',
+            collapsed: true,
+            children: [
+                { label: '1897 Plat Map', layer:Plat1897_37_07},
+                { label: 'ca1925 Plat Map', layer:Platca1925_37_07},
+                { label: '1957 Plat Map', layer:Plat1957_37_07},
+                { label: 'Bordner Survey', layer:Bordner_37_07},
+            ]
+        }, {
+            label: 'T39N R7W',
+            collapsed: true,
+            children: [
+                { label: '1897 Plat Map', layer:Plat1897_39_07},
+                { label: 'ca1925 Plat Map', layer:Platca1925_39_07},
+                { label: '1957 Plat Map', layer:Plat1957_39_07},
+                { label: 'Bordner Survey', layer:Bordner_39_07},
+            ]
+        }, {
+            label: 'T39N R8W',
+            collapsed: true,
+            children: [
+                { label: '1897 Plat Map', layer:Plat1897_39_08},
+                { label: 'ca1925 Plat Map', layer:Platca1925_39_08},
+                { label: '1957 Plat Map', layer:Plat1957_39_08},
+                { label: 'Bordner Survey', layer:Bordner_39_08},
+            ]
+        }, {
+            label: 'T40N R5W',
+            collapsed: true,
+            children: [
+                { label: '1897 Plat Map', layer:Plat1897_40_05},
+                { label: 'ca1925 Plat Map', layer:Platca1925_40_05},
+                { label: '1957 Plat Map', layer:Plat1957_40_05},
+                { label: 'Bordner Survey', layer:Bordner_40_05},
+            ]
+        }, {
+            label: 'T40N R6W',
+            collapsed: true,
+            children: [
+                { label: '1897 Plat Map', layer:Plat1897_40_06},
+                { label: 'ca1925 Plat Map', layer:Platca1925_40_06},
+                { label: '1957 Plat Map', layer:Plat1957_40_06},
+                { label: 'Bordner Survey', layer:Bordner_40_06},
+            ]
+        }, {
+            label: 'T40N R7W',
+            collapsed: true,
+            children: [
+                { label: '1897 Plat Map', layer:Plat1897_40_07},
+                { label: 'ca1925 Plat Map', layer:Platca1925_40_07},
+                { label: '1957 Plat Map', layer:Plat1957_40_07},
+                { label: 'Bordner Survey', layer:Bordner_40_07},
+            ]
+        }, 
+    ]
+};
+            
 //Adds layer control and scale bar
-L.control.layers(baseMaps, overlayMaps).addTo(map);
+L.control.layers.tree(baseTree, overlaysTree).addTo(map);
 L.control.scale().addTo(map);
-
-//Adds a marker
-var marker_example = L.marker([44.53, -90.07]).addTo(map);
-
-marker_example.bindPopup("<b>Skunk Hill</b><br>An example of a marker used to link to stories, e.g.,<br><a href='https://en.wikipedia.org/wiki/Powers_Bluff'>Wikipedia article on Skunk Hill aka Powers Bluff</a>");
- 
+          
 </script>
 <body>
 </html>
